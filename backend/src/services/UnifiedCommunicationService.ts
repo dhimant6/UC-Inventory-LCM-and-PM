@@ -1,0 +1,201 @@
+import { DeviceModel } from '../models/Device';
+import { TeamModel } from '../models/Team';
+import { PhoneModel } from '../models/Phone';
+
+export class TeamsConnector {
+  async syncDevices(tenantId: string, apiKey: string): Promise<any[]> {
+    try {
+      const response = await fetch(`https://graph.microsoft.com/v1.0/me/devices`, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Teams API error: ${response.status}`);
+      }
+
+      const teamsDevices = await response.json();
+
+      const devices = teamsDevices.map((device: any) => {
+        const team = TeamModel.findById(tenantId);
+        return {
+          id: device.id || Math.random().toString(36).substring(7),
+          name: device.displayName || `Teams Device - ${device.id}`,
+          type: 'teams' as const,
+          model: device.model || 'Unknown',
+          serialNumber: device.serialNumber || '',
+          ipAddress: device.physicalAddress || '',
+          macAddress: device.physicalAddress || '',
+          status: this.mapTeamsStatus(device.operatingSystem) || 'active',
+          purchaseDate: device.purchaseDate || new Date().toISOString(),
+          expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+          assignedTo: tenantId,
+          location: device.location || 'Unknown',
+          notes: `Synced from Teams tenant: ${tenantId}`,
+        };
+      });
+
+      devices.forEach(device => DeviceModel.create(device));
+      return devices;
+    } catch (error) {
+      console.error('Teams sync error:', error);
+      throw error;
+    }
+  }
+
+  private mapTeamsStatus(os: string): Device['status'] {
+    if (!os) return 'active';
+    if (os.toLowerCase().includes('windows')) return 'active';
+    if (os.toLowerCase().includes('android')) return 'active';
+    if (os.toLowerCase().includes('ios')) return 'active';
+    return 'maintenance';
+  }
+}
+
+export class WebexConnector {
+  async syncDevices(tenantId: string, apiKey: string): Promise<any[]> {
+    try {
+      const response = await fetch(`https://api.cisco.com/v1/devices`, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Webex API error: ${response.status}`);
+      }
+
+      const webexDevices = await response.json();
+
+      const devices = webexDevices.map((device: any) => {
+        const team = TeamModel.findById(tenantId);
+        return {
+          id: device.id || Math.random().toString(36).substring(7),
+          name: device.name || `Webex Device - ${device.id}`,
+          type: 'webex' as const,
+          model: device.model || 'Unknown',
+          serialNumber: device.serialNumber || '',
+          ipAddress: device.ipAddress || '',
+          macAddress: device.macAddress || '',
+          status: this.mapWebexStatus(device.status) || 'active',
+          purchaseDate: device.purchaseDate || new Date().toISOString(),
+          expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+          assignedTo: tenantId,
+          location: device.location || 'Unknown',
+          notes: `Synced from Webex tenant: ${tenantId}`,
+        };
+      });
+
+      devices.forEach(device => DeviceModel.create(device));
+      return devices;
+    } catch (error) {
+      console.error('Webex sync error:', error);
+      throw error;
+    }
+  }
+
+  private mapWebexStatus(status: string): Device['status'] {
+    if (!status) return 'active';
+    if (status.toLowerCase() === 'active') return 'active';
+    if (status.toLowerCase() === 'inactive') return 'inactive';
+    if (status.toLowerCase() === 'maintenance') return 'maintenance';
+    return 'expired';
+  }
+}
+
+export class PolycomConnector {
+  async syncDevices(tenantId: string, apiKey: string): Promise<any[]> {
+    try {
+      const response = await fetch(`https://api.polycom.com/v1/devices`, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Polycom API error: ${response.status}`);
+      }
+
+      const polycomDevices = await response.json();
+
+      const devices = polycomDevices.map((device: any) => {
+        const team = TeamModel.findById(tenantId);
+        return {
+          id: device.id || Math.random().toString(36).substring(7),
+          name: device.name || `Polycom Device - ${device.id}`,
+          type: 'polycom' as const,
+          model: device.model || 'Unknown',
+          serialNumber: device.serialNumber || '',
+          ipAddress: device.ipAddress || '',
+          macAddress: device.macAddress || '',
+          status: this.mapPolycomStatus(device.status) || 'active',
+          purchaseDate: device.purchaseDate || new Date().toISOString(),
+          expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+          assignedTo: tenantId,
+          location: device.location || 'Unknown',
+          notes: `Synced from Polycom tenant: ${tenantId}`,
+        };
+      });
+
+      devices.forEach(device => DeviceModel.create(device));
+      return devices;
+    } catch (error) {
+      console.error('Polycom sync error:', error);
+      throw error;
+    }
+  }
+
+  private mapPolycomStatus(status: string): Device['status'] {
+    if (!status) return 'active';
+    if (status.toLowerCase() === 'active') return 'active';
+    if (status.toLowerCase() === 'inactive') return 'inactive';
+    if (status.toLowerCase() === 'service') return 'maintenance';
+    if (status.toLowerCase() === 'retired') return 'expired';
+    return 'maintenance';
+  }
+}
+
+export class UnifiedCommunicationService {
+  private teamsConnector = new TeamsConnector();
+  private webexConnector = new WebexConnector();
+  private polycomConnector = new PolycomConnector();
+
+  async syncAllDevices(teamId: string, integrations: any) {
+    const results = {
+      teams: null,
+      webex: null,
+      polycom: null,
+      errors: []
+    };
+
+    if (integrations.teams?.enabled && integrations.teams.apiKey) {
+      try {
+        results.teams = await this.teamsConnector.syncDevices(teamId, integrations.teams.apiKey);
+      } catch (error) {
+        results.errors.push(`Teams sync failed: ${error}`);
+      }
+    }
+
+    if (integrations.webex?.enabled && integrations.webex.apiKey) {
+      try {
+        results.webex = await this.webexConnector.syncDevices(teamId, integrations.webex.apiKey);
+      } catch (error) {
+        results.errors.push(`Webex sync failed: ${error}`);
+      }
+    }
+
+    if (integrations.polycom?.enabled && integrations.polycom.apiKey) {
+      try {
+        results.polycom = await this.polycomConnector.syncDevices(teamId, integrations.polycom.apiKey);
+      } catch (error) {
+        results.errors.push(`Polycom sync failed: ${error}`);
+      }
+    }
+
+    return results;
+  }
+}
