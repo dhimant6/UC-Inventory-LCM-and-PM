@@ -1,11 +1,26 @@
+<div align="center">
+
 # UC Inventory
 
-A management console for unified-communications deployments: **Projects**, the
-**Devices** deployed under them (Poly, Cisco/Webex, Microsoft Teams Rooms), and
-the **Phone Numbers** assigned across them — with sites, rooms, users, licences,
-connector health, time-series analytics, and an audit log.
+**A management console for unified-communications deployments** — track projects, the
+devices deployed under them (Poly · Cisco Webex · Microsoft Teams Rooms), and the
+phone numbers assigned across them, with connector health, analytics and an audit log.
 
-![Dashboard](docs/screenshots/dashboard-light.png)
+[![Live demo](https://img.shields.io/badge/Live_demo-Open_app-2a78d6?style=for-the-badge)](https://uc-inventory-lcm-and-pm.onrender.com/)
+
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-18-149eca?logo=react&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite&logoColor=white)
+![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind-3-38bdf8?logo=tailwindcss&logoColor=white)
+![Lighthouse](https://img.shields.io/badge/Lighthouse-99_desktop-0cce6b?logo=lighthouse&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-43_passing-0ca30c)
+
+![Product tour](docs/demo.gif)
+
+<sub>⏳ The live demo is on a free host — the first request may take ~30s to wake the server.</sub>
+
+</div>
 
 ## Stack
 
