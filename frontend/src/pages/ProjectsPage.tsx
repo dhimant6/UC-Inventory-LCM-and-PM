@@ -1,0 +1,236 @@
+import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Drawer, DrawerField } from '../components/drawer';
+import { PageHeader } from '../components/shell';
+import { Column, DataTable } from '../components/table';
+import { ActiveFilterChips, FilterSelect, SearchInput } from '../components/toolbar';
+import {
+  Button,
+  EmptyState,
+  ErrorState,
+  ProgressBar,
+  StatusBadge,
+  TableSkeleton,
+} from '../components/ui';
+import { api } from '../lib/api';
+import { daysUntil, formatDate, formatE164 } from '../lib/format';
+import type { Project, ProjectDetail } from '../lib/types';
+import { useFetch } from '../lib/useFetch';
+
+function ProjectDrawer({ projectId, onClose }: { projectId: string | null; onClose: () => void }) {
+  const { data, loading, error, reload } = useFetch<ProjectDetail | null>(
+    () => (projectId ? api.project(projectId) : Promise.resolve(null)),
+    [projectId],
+  );
+
+  return (
+    <Drawer open={projectId !== null} onClose={onClose} title={data?.name ?? 'Project'}>
+      {loading && <TableSkeleton rows={6} />}
+      {error && <ErrorState message={error} onRetry={reload} />}
+      {data && !loading && !error && (
+        <dl className="divide-y divide-line">
+          <DrawerField label="Status">
+            <StatusBadge status={data.status} />
+            {data.status !== 'complete' && daysUntil(data.targetDate) < 0 && (
+              <span className="ml-2 text-sm font-medium text-crit-ink">
+                {Math.abs(daysUntil(data.targetDate))} days overdue
+              </span>
+            )}
+          </DrawerField>
+          <DrawerField label="Client">{data.client}</DrawerField>
+          <DrawerField label="Owner">{data.owner}</DrawerField>
+          <DrawerField label="Timeline">
+            {formatDate(data.startDate)} → {formatDate(data.targetDate)}
+          </DrawerField>
+          <DrawerField label={`Progress · ${data.progress}%`}>
+            <ProgressBar value={data.progress} label="Project progress" />
+          </DrawerField>
+          <DrawerField label="Sites">
+            {data.sites.map((s) => `${s.name} (${s.city})`).join(', ') || '—'}
+          </DrawerField>
+          <DrawerField label="Description">{data.description}</DrawerField>
+          <DrawerField label={`Devices · ${data.devices.length}`}>
+            {data.devices.length === 0 && <span className="text-ink-3">None yet</span>}
+            <ul className="space-y-1">
+              {data.devices.slice(0, 8).map((d) => (
+                <li key={d.id} className="flex items-center justify-between gap-2 text-sm">
+                  <span className="truncate">{d.name}</span>
+                  <StatusBadge status={d.status} />
+                </li>
+              ))}
+              {data.devices.length > 8 && (
+                <li className="text-xs text-ink-3">+{data.devices.length - 8} more</li>
+              )}
+            </ul>
+          </DrawerField>
+          <DrawerField label={`Numbers · ${data.numbers.length}`}>
+            {data.numbers.length === 0 && <span className="text-ink-3">None yet</span>}
+            <ul className="space-y-1">
+              {data.numbers.slice(0, 6).map((n) => (
+                <li key={n.id} className="flex items-center justify-between gap-2 text-sm">
+                  <span className="tabular">{formatE164(n.e164)}</span>
+                  <StatusBadge status={n.status} />
+                </li>
+              ))}
+              {data.numbers.length > 6 && (
+                <li className="text-xs text-ink-3">+{data.numbers.length - 6} more</li>
+              )}
+            </ul>
+          </DrawerField>
+        </dl>
+      )}
+    </Drawer>
+  );
+}
+
+export default function ProjectsPage() {
+  const projects = useFetch(() => api.projects(), []);
+  const [params, setParams] = useSearchParams();
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const q = params.get('q') ?? '';
+  const status = params.get('status') ?? '';
+
+  const setParam = (key: string, value: string) => {
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value) next.set(key, value);
+        else next.delete(key);
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
+  const filtered = useMemo(() => {
+    const list = projects.data ?? [];
+    const needle = q.trim().toLowerCase();
+    return list.filter(
+      (p) =>
+        (!needle ||
+          [p.name, p.client, p.owner].some((f) => f.toLowerCase().includes(needle))) &&
+        (!status || p.status === status),
+    );
+  }, [projects.data, q, status]);
+
+  const columns: Column<Project>[] = [
+    {
+      key: 'name',
+      header: 'Project',
+      primary: true,
+      sortValue: (p) => p.name,
+      render: (p) => (
+        <div>
+          <div className="font-medium">{p.name}</div>
+          <div className="text-xs text-ink-3">{p.client}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      sortValue: (p) => p.status,
+      render: (p) => (
+        <div className="flex items-center gap-2">
+          <StatusBadge status={p.status} />
+          {p.status !== 'complete' && daysUntil(p.targetDate) < 0 && (
+            <span className="rounded-full bg-crit px-1.5 py-0.5 text-[11px] font-semibold text-on-accent">
+              Overdue
+            </span>
+          )}
+        </div>
+      ),
+    },
+    { key: 'owner', header: 'Owner', sortValue: (p) => p.owner, render: (p) => <span className="text-ink-2">{p.owner}</span> },
+    {
+      key: 'target',
+      header: 'Target date',
+      sortValue: (p) => p.targetDate,
+      render: (p) => formatDate(p.targetDate),
+    },
+    {
+      key: 'progress',
+      header: 'Progress',
+      sortValue: (p) => p.progress,
+      render: (p) => (
+        <div className="flex w-36 items-center gap-2">
+          <ProgressBar value={p.progress} label={`${p.name} progress`} />
+          <span className="tabular w-9 text-right text-xs text-ink-2">{p.progress}%</span>
+        </div>
+      ),
+    },
+    { key: 'devices', header: 'Devices', align: 'right', sortValue: (p) => p.deviceCount, render: (p) => p.deviceCount },
+    { key: 'numbers', header: 'Numbers', align: 'right', sortValue: (p) => p.numberCount, render: (p) => p.numberCount },
+    {
+      key: 'start',
+      header: 'Start date',
+      defaultHidden: true,
+      sortValue: (p) => p.startDate,
+      render: (p) => formatDate(p.startDate),
+    },
+  ];
+
+  const chips = [
+    status && { key: 'status', label: `Status: ${status}`, onRemove: () => setParam('status', '') },
+  ].filter((c): c is { key: string; label: string; onRemove: () => void } => Boolean(c));
+
+  return (
+    <div>
+      <PageHeader
+        title="Projects"
+        description="Deployment programmes and their rollout state across clients and sites."
+      />
+
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <SearchInput value={q} onChange={(v) => setParam('q', v)} placeholder="Search project, client, owner…" />
+        <FilterSelect
+          label="Status"
+          value={status}
+          onChange={(v) => setParam('status', v)}
+          options={[
+            { value: 'planning', label: 'Planning' },
+            { value: 'in-flight', label: 'In flight' },
+            { value: 'blocked', label: 'Blocked' },
+            { value: 'complete', label: 'Complete' },
+          ]}
+        />
+      </div>
+      <div className="mb-3">
+        <ActiveFilterChips chips={chips} onClear={() => setParams({}, { replace: true })} />
+      </div>
+
+      {projects.loading && (
+        <div className="rounded-lg border border-line bg-surface">
+          <TableSkeleton rows={8} />
+        </div>
+      )}
+      {projects.error && (
+        <div className="rounded-lg border border-line bg-surface">
+          <ErrorState message={projects.error} onRetry={projects.reload} />
+        </div>
+      )}
+      {projects.data && !projects.loading && !projects.error && (
+        <DataTable
+          ariaLabel="Projects"
+          rows={filtered}
+          columns={columns}
+          rowKey={(p) => p.id}
+          onRowClick={(p) => setSelected(p.id)}
+          emptyState={
+            <EmptyState
+              title="No projects match these filters"
+              action={
+                <Button size="sm" onClick={() => setParams({}, { replace: true })}>
+                  Clear filters
+                </Button>
+              }
+            />
+          }
+        />
+      )}
+
+      <ProjectDrawer projectId={selected} onClose={() => setSelected(null)} />
+    </div>
+  );
+}
