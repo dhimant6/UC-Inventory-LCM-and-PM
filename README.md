@@ -1,6 +1,6 @@
 <div align="center">
 
-# UC Inventory
+# Fleetline
 
 **A management console for unified-communications deployments** — track projects, the
 devices deployed under them (Poly · Cisco Webex · Microsoft Teams Rooms), and the
@@ -73,6 +73,19 @@ The backend reads `DATA_SOURCE` from the environment (see
   with missing credentials shows as **Disabled** on the Connectors page; a
   failing vendor shows as **Error** while reads keep serving the last synced
   data. Live sync never blanks a page.
+
+## Sign-in (optional)
+
+The app runs in **guest mode** by default — fully usable with no login. When OAuth
+credentials are configured, a **Sign in** button appears offering **Google** and
+**Microsoft** (only the providers you've configured show up). Sessions are stateless
+signed cookies (no database). On each sign-in the owner gets an **email alert**
+(via Resend) with the visitor's name, email, provider, time and IP.
+
+Configure it with the `APP_BASE_URL`, `SESSION_SECRET`, `GOOGLE_*` / `MICROSOFT_*`,
+and `RESEND_API_KEY` / `ALERT_EMAIL_TO` env vars — see
+[backend/.env.example](backend/.env.example). Redirect URIs to register:
+`{APP_BASE_URL}/api/auth/google/callback` and `.../api/auth/microsoft/callback`.
 
 ## Connector architecture
 

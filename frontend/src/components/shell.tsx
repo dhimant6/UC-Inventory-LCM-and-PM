@@ -28,6 +28,7 @@ import { api } from '../lib/api';
 import { timeAgo } from '../lib/format';
 import { useFetch } from '../lib/useFetch';
 import { useTheme } from '../lib/theme';
+import { AuthControl } from './auth';
 import { CommandPalette } from './palette';
 import { Button } from './ui';
 
@@ -165,6 +166,7 @@ function NotificationsMenu() {
 export function AppShell({ children }: { children: ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const { theme, toggle } = useTheme();
   const location = useLocation();
 
@@ -179,6 +181,21 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
+  // Surface the OAuth callback result, then strip it from the URL.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const auth = params.get('auth');
+    if (auth === 'success') setToast('Signed in successfully.');
+    else if (auth === 'error') setToast('Sign-in failed. Please try again.');
+    if (auth) {
+      params.delete('auth');
+      const qs = params.toString();
+      window.history.replaceState({}, '', window.location.pathname + (qs ? `?${qs}` : ''));
+      const t = setTimeout(() => setToast(null), 4000);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
   useEffect(() => {
     setMobileNavOpen(false);
   }, [location.pathname]);
@@ -189,7 +206,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-surface py-4 lg:flex">
         <div className="mb-4 flex items-center gap-2 px-6">
           <Radio aria-hidden className="h-5 w-5 text-accent" />
-          <span className="text-base font-semibold text-ink-1">UC Inventory</span>
+          <span className="text-base font-semibold text-ink-1">Fleetline</span>
         </div>
         <SidebarNav />
         <p className="px-6 text-[11px] text-ink-3">
@@ -204,7 +221,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <aside className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-line bg-surface py-4">
             <div className="mb-4 flex items-center justify-between px-4">
               <span className="flex items-center gap-2 text-base font-semibold text-ink-1">
-                <Radio aria-hidden className="h-5 w-5 text-accent" /> UC Inventory
+                <Radio aria-hidden className="h-5 w-5 text-accent" /> Fleetline
               </span>
               <Button variant="ghost" size="sm" aria-label="Close menu" onClick={() => setMobileNavOpen(false)}>
                 <X aria-hidden className="h-4 w-4" />
@@ -249,6 +266,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Sun aria-hidden className="h-4 w-4" />
               )}
             </Button>
+            <div className="ml-1">
+              <AuthControl />
+            </div>
           </div>
         </header>
 
@@ -256,6 +276,15 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+
+      {toast && (
+        <div
+          role="status"
+          className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink-1 shadow-3"
+        >
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

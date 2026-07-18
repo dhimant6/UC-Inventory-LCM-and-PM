@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AppShell } from './components/shell';
 import { TableSkeleton } from './components/ui';
+import { AuthProvider } from './lib/auth';
 import { ThemeProvider } from './lib/theme';
 
 // Route-level code splitting: each page (and its chart/3D deps) loads on demand.
@@ -19,6 +20,7 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 export default function App() {
   return (
     <ThemeProvider>
+      <AuthProvider>
       <BrowserRouter>
         <AppShell>
           <Suspense fallback={<TableSkeleton rows={10} />}>
@@ -37,6 +39,7 @@ export default function App() {
           </Suspense>
         </AppShell>
       </BrowserRouter>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

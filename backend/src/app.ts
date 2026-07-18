@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
 import { env } from './env';
+import { authRouter } from './routes/auth';
 import { connectorsRouter } from './routes/connectors';
 import { insightsRouter } from './routes/insights';
 import { inventoryRouter } from './routes/inventory';
@@ -15,6 +16,8 @@ const hasSpa = fs.existsSync(path.join(SPA_DIR, 'index.html'));
 
 export function createApp(): express.Express {
   const app = express();
+  // Behind Render's proxy: trust it so req.protocol is https for OAuth redirects.
+  app.set('trust proxy', 1);
   // CSP disabled: the app serves its own assets incl. an inline theme script.
   app.use(helmet({ contentSecurityPolicy: false }));
   app.use(cors());
@@ -25,6 +28,7 @@ export function createApp(): express.Express {
     res.json({ ok: true, dataSource: env.dataSource });
   });
 
+  app.use('/api/auth', authRouter);
   app.use('/api', inventoryRouter);
   app.use('/api', insightsRouter);
   app.use('/api/connectors', connectorsRouter);
