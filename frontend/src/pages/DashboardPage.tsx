@@ -1,5 +1,5 @@
 import { ArrowRight, Bookmark } from 'lucide-react';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   CallQualityChart,
@@ -16,12 +16,30 @@ import { useFetch } from '../lib/useFetch';
 
 const DeploymentHero = lazy(() => import('../components/hero3d'));
 
+/**
+ * Defer mounting heavy content until the browser is idle so the three.js
+ * chunk never competes with first paint or blocks interactivity.
+ */
+function useIdleMount(): boolean {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(() => setReady(true), { timeout: 2000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const timer = setTimeout(() => setReady(true), 1200);
+    return () => clearTimeout(timer);
+  }, []);
+  return ready;
+}
+
 function savedViewHref(screen: string, filters: Record<string, string>): string {
   const params = new URLSearchParams(filters);
   return `/${screen}?${params.toString()}`;
 }
 
 export default function DashboardPage() {
+  const heroReady = useIdleMount();
   const summary = useFetch(() => api.summary(), []);
   const callQuality = useFetch(() => api.callQuality(90), []);
   const uptime = useFetch(() => api.uptime(90), []);
@@ -89,9 +107,13 @@ export default function DashboardPage() {
       {/* Hero: 3D deployment topology + device status */}
       <div className="mb-4 grid gap-4 lg:grid-cols-3">
         <Card className="overflow-hidden lg:col-span-2">
-          <Suspense fallback={<Skeleton className="h-72 w-full rounded-none" />}>
-            <DeploymentHero sites={sites.data ?? []} />
-          </Suspense>
+          {heroReady ? (
+            <Suspense fallback={<Skeleton className="h-72 w-full rounded-none" />}>
+              <DeploymentHero sites={sites.data ?? []} />
+            </Suspense>
+          ) : (
+            <Skeleton className="h-72 w-full rounded-none" />
+          )}
         </Card>
         <div className="flex flex-col gap-4">
           <Card className="p-4">
