@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { Request, Response, Router } from 'express';
 import { env } from '../env';
-import { sendLoginAlert } from '../auth/email';
+import { sendGuestAlert, sendLoginAlert } from '../auth/email';
 import {
   ProviderId,
   authorizeUrl,
@@ -43,6 +43,29 @@ authRouter.get('/me', (req, res) => {
 
 authRouter.post('/logout', (_req, res) => {
   res.clearCookie(SESSION_COOKIE, secureCookie);
+  res.json({ ok: true });
+});
+
+// Guest entered the demo: alert the owner and log activity. Purely a
+// notification — demo gating itself is client-side.
+authRouter.post('/guest', (req, res) => {
+  const raw = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+  const name = raw.slice(0, 60) || 'Anonymous';
+  const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || '';
+  void sendGuestAlert(name, { ip, userAgent: req.get('user-agent') ?? '' });
+  try {
+    getStore().activity.unshift({
+      id: `guest-${Date.now()}`,
+      at: new Date().toISOString(),
+      type: 'user.added',
+      actor: name,
+      message: `${name} opened the demo`,
+      entityType: 'user',
+      entityId: 'guest',
+    });
+  } catch {
+    // best-effort
+  }
   res.json({ ok: true });
 });
 

@@ -14,20 +14,31 @@ export interface AuthProviderInfo {
 
 interface AuthContextValue {
   user: AuthUser | null;
+  /** Set when the visitor chose "continue as guest" for the demo. */
+  guestName: string | null;
   providers: AuthProviderInfo[];
   loading: boolean;
-  logout: () => Promise<void>;
+  /** True once the visitor has either signed in or entered the demo. */
+  entered: boolean;
+  continueAsGuest: (name: string) => void;
+  signOut: () => Promise<void>;
 }
+
+const GUEST_KEY = 'fl_guest';
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
+  guestName: null,
   providers: [],
   loading: true,
-  logout: async () => undefined,
+  entered: false,
+  continueAsGuest: () => undefined,
+  signOut: async () => undefined,
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [guestName, setGuestName] = useState<string | null>(() => localStorage.getItem(GUEST_KEY));
   const [providers, setProviders] = useState<AuthProviderInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,13 +53,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const logout = useCallback(async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    setUser(null);
+  const continueAsGuest = useCallback((name: string) => {
+    const clean = name.trim().slice(0, 60) || 'Guest';
+    localStorage.setItem(GUEST_KEY, clean);
+    setGuestName(clean);
+    // Fire-and-forget: notify the owner someone opened the demo.
+    void fetch('/api/auth/guest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: clean }),
+    }).catch(() => undefined);
   }, []);
 
+  const signOut = useCallback(async () => {
+    localStorage.removeItem(GUEST_KEY);
+    setGuestName(null);
+    if (user) {
+      await fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
+      setUser(null);
+    }
+  }, [user]);
+
   return (
-    <AuthContext.Provider value={{ user, providers, loading, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        guestName,
+        providers,
+        loading,
+        entered: Boolean(user) || Boolean(guestName),
+        continueAsGuest,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

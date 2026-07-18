@@ -2,7 +2,7 @@ import { Suspense, lazy } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AppShell } from './components/shell';
 import { TableSkeleton } from './components/ui';
-import { AuthProvider } from './lib/auth';
+import { AuthProvider, useAuth } from './lib/auth';
 import { ThemeProvider } from './lib/theme';
 
 // Route-level code splitting: each page (and its chart/3D deps) loads on demand.
@@ -16,29 +16,55 @@ const LicensesPage = lazy(() => import('./pages/LicensesPage'));
 const ConnectorsPage = lazy(() => import('./pages/ConnectorsPage'));
 const ActivityPage = lazy(() => import('./pages/ActivityPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const Landing = lazy(() => import('./pages/Landing'));
+
+/** Shows the landing gate until the visitor signs in or enters the demo. */
+function Gate() {
+  const { entered, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-page">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-accent" />
+      </div>
+    );
+  }
+
+  if (!entered) {
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-page" />}>
+        <Landing />
+      </Suspense>
+    );
+  }
+
+  return (
+    <AppShell>
+      <Suspense fallback={<TableSkeleton rows={10} />}>
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/devices" element={<DevicesPage />} />
+          <Route path="/numbers" element={<NumbersPage />} />
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/sites" element={<SitesPage />} />
+          <Route path="/licenses" element={<LicensesPage />} />
+          <Route path="/connectors" element={<ConnectorsPage />} />
+          <Route path="/activity" element={<ActivityPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
+    </AppShell>
+  );
+}
 
 export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-      <BrowserRouter>
-        <AppShell>
-          <Suspense fallback={<TableSkeleton rows={10} />}>
-            <Routes>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/projects" element={<ProjectsPage />} />
-              <Route path="/devices" element={<DevicesPage />} />
-              <Route path="/numbers" element={<NumbersPage />} />
-              <Route path="/users" element={<UsersPage />} />
-              <Route path="/sites" element={<SitesPage />} />
-              <Route path="/licenses" element={<LicensesPage />} />
-              <Route path="/connectors" element={<ConnectorsPage />} />
-              <Route path="/activity" element={<ActivityPage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </Suspense>
-        </AppShell>
-      </BrowserRouter>
+        <BrowserRouter>
+          <Gate />
+        </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
   );

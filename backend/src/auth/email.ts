@@ -47,6 +47,44 @@ export async function sendLoginAlert(
   }
 }
 
+/** Alert when someone enters the demo as a named guest (no OAuth). */
+export async function sendGuestAlert(
+  name: string,
+  meta: { ip: string; userAgent: string },
+): Promise<void> {
+  if (!env.resendApiKey || !env.alertEmailTo) {
+    console.log(`[guest] "${name}" entered the demo (email alert not configured)`);
+    return;
+  }
+  const when = new Date().toLocaleString('en-GB', { timeZone: 'UTC', timeZoneName: 'short' });
+  const html = `
+    <div style="font-family:system-ui,sans-serif;max-width:480px">
+      <h2 style="margin:0 0 12px">Someone opened the Fleetline demo</h2>
+      <table style="border-collapse:collapse;font-size:14px">
+        <tr><td style="padding:4px 12px 4px 0;color:#666">Name</td><td><b>${escapeHtml(name)}</b></td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#666">Mode</td><td>Guest / demo</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#666">Time</td><td>${when}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#666">IP</td><td>${escapeHtml(meta.ip)}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#666">Device</td><td>${escapeHtml(meta.userAgent)}</td></tr>
+      </table>
+    </div>`;
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${env.resendApiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: env.alertEmailFrom,
+        to: [env.alertEmailTo],
+        subject: `Fleetline demo opened: ${name}`,
+        html,
+      }),
+    });
+    if (!res.ok) console.error(`[guest] email alert failed (${res.status})`);
+  } catch (error) {
+    console.error('[guest] email alert error:', error);
+  }
+}
+
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 }
