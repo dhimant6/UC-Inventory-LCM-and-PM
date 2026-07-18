@@ -1,0 +1,148 @@
+
+> uc-inventory-backend@1.0.0 build
+> tsc
+
+src/db/init.ts(1,15): error TS2305: Module '"lowdb"' has no exported member 'JSONFile'.
+src/db/init.ts(5,12): error TS2554: Expected 2 arguments, but got 1.
+src/models/Device.ts(23,5): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Device.ts(27,18): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Device.ts(29,29): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Device.ts(29,50): error TS7006: Parameter 'device' implicitly has an 'any' type.
+src/models/Device.ts(32,19): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Device.ts(32,45): error TS7006: Parameter 'device' implicitly has an 'any' type.
+src/models/Device.ts(34,7): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Device.ts(34,37): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Device.ts(39,5): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Device.ts(39,23): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Device.ts(39,46): error TS7006: Parameter 'device' implicitly has an 'any' type.
+src/models/Device.ts(42,34): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Device.ts(42,57): error TS7006: Parameter 'device' implicitly has an 'any' type.
+src/models/Forecast.ts(18,5): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Forecast.ts(22,18): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Forecast.ts(24,35): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Forecast.ts(24,60): error TS7006: Parameter 'forecast' implicitly has an 'any' type.
+src/models/Forecast.ts(27,19): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Forecast.ts(27,47): error TS7006: Parameter 'forecast' implicitly has an 'any' type.
+src/models/Forecast.ts(29,7): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Forecast.ts(29,39): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Phone.ts(19,5): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Phone.ts(23,18): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Phone.ts(25,29): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Phone.ts(25,49): error TS7006: Parameter 'phone' implicitly has an 'any' type.
+src/models/Phone.ts(28,19): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Phone.ts(28,44): error TS7006: Parameter 'phone' implicitly has an 'any' type.
+src/models/Phone.ts(30,7): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Phone.ts(30,36): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Phone.ts(35,5): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Phone.ts(35,22): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Phone.ts(35,44): error TS7006: Parameter 'phone' implicitly has an 'any' type.
+src/models/Phone.ts(38,34): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Phone.ts(38,56): error TS7006: Parameter 'phone' implicitly has an 'any' type.
+src/models/Project.ts(19,5): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Project.ts(23,18): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Project.ts(25,29): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Project.ts(25,51): error TS7006: Parameter 'project' implicitly has an 'any' type.
+src/models/Project.ts(28,19): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Project.ts(28,46): error TS7006: Parameter 'project' implicitly has an 'any' type.
+src/models/Project.ts(30,7): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Project.ts(30,38): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Project.ts(35,5): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Project.ts(35,24): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Project.ts(35,48): error TS7006: Parameter 'project' implicitly has an 'any' type.
+src/models/Project.ts(38,38): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Project.ts(38,62): error TS7006: Parameter 'project' implicitly has an 'any' type.
+src/models/Team.ts(18,5): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Team.ts(22,18): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Team.ts(24,29): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Team.ts(24,48): error TS7006: Parameter 'team' implicitly has an 'any' type.
+src/models/Team.ts(27,19): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Team.ts(27,43): error TS7006: Parameter 'team' implicitly has an 'any' type.
+src/models/Team.ts(29,7): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Team.ts(29,35): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Team.ts(34,5): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Team.ts(34,21): error TS18046: 'db.data' is of type 'unknown'.
+src/models/Team.ts(34,42): error TS7006: Parameter 'team' implicitly has an 'any' type.
+src/models/TimeEntry.ts(16,5): error TS18046: 'db.data' is of type 'unknown'.
+src/models/TimeEntry.ts(20,18): error TS18046: 'db.data' is of type 'unknown'.
+src/models/TimeEntry.ts(22,35): error TS18046: 'db.data' is of type 'unknown'.
+src/models/TimeEntry.ts(22,62): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+src/models/TimeEntry.ts(25,12): error TS18046: 'db.data' is of type 'unknown'.
+src/models/TimeEntry.ts(26,15): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+src/models/User.ts(18,5): error TS18046: 'db.data' is of type 'unknown'.
+src/models/User.ts(22,18): error TS18046: 'db.data' is of type 'unknown'.
+src/models/User.ts(24,29): error TS18046: 'db.data' is of type 'unknown'.
+src/models/User.ts(24,48): error TS7006: Parameter 'user' implicitly has an 'any' type.
+src/models/User.ts(26,35): error TS18046: 'db.data' is of type 'unknown'.
+src/models/User.ts(26,54): error TS7006: Parameter 'user' implicitly has an 'any' type.
+src/models/User.ts(29,19): error TS18046: 'db.data' is of type 'unknown'.
+src/models/User.ts(29,43): error TS7006: Parameter 'user' implicitly has an 'any' type.
+src/models/User.ts(31,7): error TS18046: 'db.data' is of type 'unknown'.
+src/models/User.ts(31,35): error TS18046: 'db.data' is of type 'unknown'.
+src/models/User.ts(36,5): error TS18046: 'db.data' is of type 'unknown'.
+src/models/User.ts(36,21): error TS18046: 'db.data' is of type 'unknown'.
+src/models/User.ts(36,42): error TS7006: Parameter 'user' implicitly has an 'any' type.
+src/routes/forecasts.ts(28,43): error TS2345: Argument of type '{ teamId: string; period: "monthly" | "quarterly" | "yearly"; startDate: string; endDate: string; expectedHours: number; notes?: string | undefined; actualHours?: number | undefined; variance?: number | undefined; id: string; }' is not assignable to parameter of type 'Forecast'.
+  Property 'createdAt' is missing in type '{ teamId: string; period: "monthly" | "quarterly" | "yearly"; startDate: string; endDate: string; expectedHours: number; notes?: string | undefined; actualHours?: number | undefined; variance?: number | undefined; id: string; }' but required in type 'Forecast'.
+src/routes/forecasts.ts(59,36): error TS2339: Property 'findById' does not exist on type '{ create: (forecast: Forecast) => Forecast; findAll: () => any; findByTeam: (teamId: string) => any; update: (id: string, updates: Partial<Forecast>) => void; }'.
+src/routes/forecasts.ts(67,43): error TS2339: Property 'findById' does not exist on type '{ create: (forecast: Forecast) => Forecast; findAll: () => any; findByTeam: (teamId: string) => any; update: (id: string, updates: Partial<Forecast>) => void; }'.
+src/routes/projects.ts(36,41): error TS2345: Argument of type '{ name: string; status: "active" | "completed" | "on_hold" | "cancelled"; startDate: string; description: string; deviceId: string; endDate?: string | undefined; jiraId?: string | undefined; assignedTeam?: string | undefined; id: string; }' is not assignable to parameter of type 'Project'.
+  Type '{ name: string; status: "active" | "completed" | "on_hold" | "cancelled"; startDate: string; description: string; deviceId: string; endDate?: string | undefined; jiraId?: string | undefined; assignedTeam?: string | undefined; id: string; }' is missing the following properties from type 'Project': createdAt, updatedAt
+src/routes/timeEntries.ts(35,20): error TS2304: Cannot find name 'TeamModel'.
+src/routes/timeEntries.ts(41,41): error TS2345: Argument of type '{ userId: string; hours: number; description: string; date: string; teamId?: string | undefined; projectId?: string | undefined; id: string; }' is not assignable to parameter of type 'TimeEntry'.
+  Property 'createdAt' is missing in type '{ userId: string; hours: number; description: string; date: string; teamId?: string | undefined; projectId?: string | undefined; id: string; }' but required in type 'TimeEntry'.
+src/routes/users.ts(25,54): error TS2552: Cannot find name 'bcrypt'. Did you mean 'crypto'?
+src/routes/users.ts(27,35): error TS2345: Argument of type '{ password: any; email: string; name: string; role: "admin" | "user" | "manager"; teamId?: string | undefined; avatar?: string | undefined; id: string; }' is not assignable to parameter of type 'User'.
+  Type '{ password: any; email: string; name: string; role: "admin" | "user" | "manager"; teamId?: string | undefined; avatar?: string | undefined; id: string; }' is missing the following properties from type 'User': createdAt, updatedAt
+src/routes/users.ts(70,32): error TS2552: Cannot find name 'bcrypt'. Did you mean 'crypto'?
+src/services/JiraService.ts(54,19): error TS18046: 'jiraResult' is of type 'unknown'.
+src/services/PhoneManagementService.ts(23,55): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/services/PhoneManagementService.ts(212,49): error TS18046: 'error' is of type 'unknown'.
+src/services/PhoneManagementService.ts(217,9): error TS2353: Object literal may only specify known properties, and 'successful' does not exist in type 'any[]'.
+src/services/ServiceNowService.ts(22,48): error TS7006: Parameter 'user' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(23,59): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(25,49): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(26,33): error TS7006: Parameter 'u' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(57,7): error TS2322: Type 'unknown' is not assignable to type 'any[]'.
+src/services/ServiceNowService.ts(71,48): error TS7006: Parameter 'user' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(72,59): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(74,49): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(81,49): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(81,54): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(88,317): error TS7006: Parameter 'u' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(88,362): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(88,394): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(88,399): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(137,48): error TS7006: Parameter 'user' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(138,59): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(144,49): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(150,49): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+src/services/ServiceNowService.ts(150,54): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+src/services/UnifiedCommunicationService.ts(21,23): error TS18046: 'teamsDevices' is of type 'unknown'.
+src/services/UnifiedCommunicationService.ts(40,23): error TS7006: Parameter 'device' implicitly has an 'any' type.
+src/services/UnifiedCommunicationService.ts(48,39): error TS2304: Cannot find name 'Device'.
+src/services/UnifiedCommunicationService.ts(73,23): error TS18046: 'webexDevices' is of type 'unknown'.
+src/services/UnifiedCommunicationService.ts(92,23): error TS7006: Parameter 'device' implicitly has an 'any' type.
+src/services/UnifiedCommunicationService.ts(100,43): error TS2304: Cannot find name 'Device'.
+src/services/UnifiedCommunicationService.ts(125,23): error TS18046: 'polycomDevices' is of type 'unknown'.
+src/services/UnifiedCommunicationService.ts(144,23): error TS7006: Parameter 'device' implicitly has an 'any' type.
+src/services/UnifiedCommunicationService.ts(152,45): error TS2304: Cannot find name 'Device'.
+src/services/UnifiedCommunicationService.ts(177,9): error TS2322: Type 'any[]' is not assignable to type 'null'.
+src/services/UnifiedCommunicationService.ts(179,29): error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.
+src/services/UnifiedCommunicationService.ts(185,9): error TS2322: Type 'any[]' is not assignable to type 'null'.
+src/services/UnifiedCommunicationService.ts(187,29): error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.
+src/services/UnifiedCommunicationService.ts(193,9): error TS2322: Type 'any[]' is not assignable to type 'null'.
+src/services/UnifiedCommunicationService.ts(195,29): error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.
+src/test/runTests.ts(1,46): error TS2307: Cannot find module './test/ValidationHelper' or its corresponding type declarations.
+src/test/runTests.ts(49,37): error TS18046: 'error' is of type 'unknown'.
+src/test/ValidationHelper.ts(8,39): error TS2345: Argument of type '{ id: string; name: string; department: string; managerId: string; location: string; contactEmail: string; contactPhone: string; }' is not assignable to parameter of type 'Team'.
+  Type '{ id: string; name: string; department: string; managerId: string; location: string; contactEmail: string; contactPhone: string; }' is missing the following properties from type 'Team': createdAt, updatedAt
+src/test/ValidationHelper.ts(18,39): error TS2345: Argument of type '{ id: string; email: string; name: string; role: "admin"; teamId: string; password: string; }' is not assignable to parameter of type 'User'.
+  Type '{ id: string; email: string; name: string; role: "admin"; teamId: string; password: string; }' is missing the following properties from type 'User': createdAt, updatedAt
+src/test/ValidationHelper.ts(27,43): error TS2345: Argument of type '{ id: string; name: string; type: "teams"; model: string; serialNumber: string; ipAddress: string; macAddress: string; status: "active"; purchaseDate: string; expiryDate: string; assignedTo: string; location: string; }' is not assignable to parameter of type 'Device'.
+  Type '{ id: string; name: string; type: "teams"; model: string; serialNumber: string; ipAddress: string; macAddress: string; status: "active"; purchaseDate: string; expiryDate: string; assignedTo: string; location: string; }' is missing the following properties from type 'Device': createdAt, updatedAt
+src/test/ValidationHelper.ts(42,41): error TS2345: Argument of type '{ id: string; number: string; type: "mobile"; teamId: string; assignedTo: string; status: "active"; purchaseDate: string; }' is not assignable to parameter of type 'Phone'.
+  Type '{ id: string; number: string; type: "mobile"; teamId: string; assignedTo: string; status: "active"; purchaseDate: string; }' is missing the following properties from type 'Phone': createdAt, updatedAt
+src/test/ValidationHelper.ts(62,46): error TS7006: Parameter 'device' implicitly has an 'any' type.
+src/test/ValidationHelper.ts(63,42): error TS7006: Parameter 'team' implicitly has an 'any' type.
+src/test/ValidationHelper.ts(64,44): error TS7006: Parameter 'phone' implicitly has an 'any' type.
+src/test/ValidationHelper.ts(65,42): error TS7006: Parameter 'user' implicitly has an 'any' type.
