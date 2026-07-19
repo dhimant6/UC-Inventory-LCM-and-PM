@@ -48,13 +48,34 @@ async function get<T>(path: string): Promise<T> {
   return (await response.json()) as T;
 }
 
-async function post<T>(path: string): Promise<T> {
-  const response = await fetch(`/api${path}`, { method: 'POST' });
+async function send<T>(path: string, method: 'POST' | 'PUT' | 'DELETE', body?: unknown): Promise<T> {
+  const response = await fetch(`/api${path}`, {
+    method,
+    headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
   if (!response.ok) {
-    throw new ApiError(response.status, `Request failed (${response.status})`);
+    let message = `Request failed (${response.status})`;
+    try {
+      const b = (await response.json()) as { error?: string };
+      if (b.error) message = b.error;
+    } catch {
+      // keep generic
+    }
+    throw new ApiError(response.status, message);
   }
   return (await response.json()) as T;
 }
+
+const post = <T>(path: string, body?: unknown) => send<T>(path, 'POST', body);
+
+export interface ImportResult {
+  created: number;
+  updated: number;
+  errors: string[];
+}
+
+export type ProjectInput = Partial<Omit<Project, 'deviceCount' | 'numberCount'>> & { name: string };
 
 export const api = {
   summary: () => get<Summary>('/summary'),
@@ -81,4 +102,14 @@ export const api = {
   connectors: () => get<ConnectorsResponse>('/connectors'),
   testConnection: (vendor: Vendor) => post<TestConnectionResult>(`/connectors/${vendor}/test`),
   syncConnector: (vendor: Vendor) => post<SyncResult>(`/connectors/${vendor}/sync`),
+  syncAll: () => post<SyncResult[]>('/connectors/sync-all'),
+
+  createProject: (input: ProjectInput) => send<Project>('/projects', 'POST', input),
+  updateProject: (id: string, input: ProjectInput) =>
+    send<Project>(`/projects/${encodeURIComponent(id)}`, 'PUT', input),
+  deleteProject: (id: string) => send<{ ok: boolean }>(`/projects/${encodeURIComponent(id)}`, 'DELETE'),
+  importProjects: (rows: Record<string, unknown>[]) =>
+    send<ImportResult>('/projects/import', 'POST', rows),
+  importNumbers: (rows: Record<string, unknown>[]) =>
+    send<ImportResult>('/numbers/import', 'POST', rows),
 };

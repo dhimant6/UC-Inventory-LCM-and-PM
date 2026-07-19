@@ -3,9 +3,94 @@
  * mapping — no raw colors or one-off spacing in feature code.
  */
 import clsx from 'clsx';
-import { AlertTriangle, Inbox, RefreshCw } from 'lucide-react';
-import { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
+import { AlertTriangle, Inbox, RefreshCw, X } from 'lucide-react';
+import { ButtonHTMLAttributes, HTMLAttributes, ReactNode, useEffect } from 'react';
 import type { ConnectorStatus, DeviceStatus, NumberStatus, ProjectStatus } from '../lib/types';
+
+/* ---------- Modal ---------- */
+
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  width = 'max-w-lg',
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  children: ReactNode;
+  width?: string;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center">
+      <div aria-hidden className="fixed inset-0 bg-black/40" onClick={onClose} />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className={clsx(
+          'relative z-10 w-full animate-[modal-in_180ms_cubic-bezier(0,0,0.2,1)] rounded-lg border border-line bg-surface shadow-3',
+          width,
+        )}
+      >
+        <style>{`@keyframes modal-in{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}`}</style>
+        <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
+          <h2 className="text-base font-semibold text-ink-1">{title}</h2>
+          <button
+            aria-label="Close"
+            onClick={onClose}
+            className="micro rounded-sm p-1 text-ink-2 hover:bg-surface-2 hover:text-ink-1"
+          >
+            <X aria-hidden className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="px-5 py-4">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Form fields ---------- */
+
+export function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-xs font-medium text-ink-2">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+const inputClass =
+  'micro h-9 w-full rounded-sm border border-line-2 bg-surface px-3 text-sm text-ink-1 placeholder:text-ink-3 focus:border-accent';
+
+export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return <input {...props} className={clsx(inputClass, props.className)} />;
+}
+
+export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return <select {...props} className={clsx(inputClass, props.className)} />;
+}
+
+export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      {...props}
+      className={clsx(inputClass, 'h-auto min-h-[4rem] py-2', props.className)}
+    />
+  );
+}
 
 /* ---------- Card ---------- */
 

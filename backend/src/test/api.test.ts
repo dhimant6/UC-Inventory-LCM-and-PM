@@ -119,4 +119,61 @@ describe('API smoke', () => {
     expect(res.status).toBe(404);
     expect(res.body.error).toBeTruthy();
   });
+
+  it('seeds MTR-tagged devices from Teams and Webex', async () => {
+    const res = await request(app).get('/api/devices');
+    const mtr = res.body.filter((d: { tags: string[] }) => d.tags.includes('mtr'));
+    expect(mtr.length).toBeGreaterThan(0);
+    const vendors = new Set(mtr.map((d: { vendor: string }) => d.vendor));
+    expect(vendors.has('teams')).toBe(true);
+    expect(vendors.has('webex')).toBe(true);
+  });
+});
+
+describe('project CRUD + import', () => {
+  it('creates, updates and deletes a project', async () => {
+    const create = await request(app)
+      .post('/api/projects')
+      .send({ name: 'Test Rollout', client: 'Acme', status: 'planning' });
+    expect(create.status).toBe(201);
+    const id = create.body.id as string;
+
+    const update = await request(app).put(`/api/projects/${id}`).send({ name: 'Test Rollout', status: 'in-flight', progress: 40 });
+    expect(update.status).toBe(200);
+    expect(update.body.status).toBe('in-flight');
+    expect(update.body.progress).toBe(40);
+
+    const del = await request(app).delete(`/api/projects/${id}`);
+    expect(del.status).toBe(200);
+    const after = await request(app).get(`/api/projects/${id}`);
+    expect(after.status).toBe(404);
+  });
+
+  it('rejects a project without a name', async () => {
+    const res = await request(app).post('/api/projects').send({ client: 'No Name' });
+    expect(res.status).toBe(400);
+  });
+
+  it('imports projects in bulk', async () => {
+    const res = await request(app)
+      .post('/api/projects/import')
+      .send([{ name: 'Imported A' }, { name: 'Imported B', status: 'blocked' }, { client: 'skip' }]);
+    expect(res.status).toBe(200);
+    expect(res.body.created).toBe(2);
+    expect(res.body.errors.length).toBe(1);
+  });
+});
+
+describe('number import', () => {
+  it('imports valid E.164 numbers and skips bad rows', async () => {
+    const res = await request(app)
+      .post('/api/numbers/import')
+      .send([
+        { e164: '+14155550111', carrier: 'Teams' },
+        { e164: 'not-a-number' },
+      ]);
+    expect(res.status).toBe(200);
+    expect(res.body.created + res.body.updated).toBe(1);
+    expect(res.body.errors.length).toBe(1);
+  });
 });

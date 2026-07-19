@@ -55,11 +55,17 @@ export function mapWebexDeviceStatus(connectionStatus: string | undefined): Devi
 }
 
 export function mapWebexDevice(raw: WebexDevice, siteId: string): Device {
+  const product = raw.product ?? raw.type ?? 'Unknown';
+  const tags = [...(raw.tags ?? [])];
+  // Cisco room hardware managed via Control Hub that runs Microsoft Teams Rooms.
+  if (/MTR|Microsoft Teams Room|Room Kit|Room Bar/i.test(`${product} ${raw.displayName ?? ''}`)) {
+    tags.push('mtr');
+  }
   return {
     id: `webex:${raw.id}`,
     vendor: 'webex',
     name: raw.displayName ?? raw.product ?? raw.id,
-    model: raw.product ?? raw.type ?? 'Unknown',
+    model: product,
     serialNumber: raw.serial ?? '',
     macAddress: raw.mac ?? '',
     ipAddress: raw.ip ?? '',
@@ -69,7 +75,7 @@ export function mapWebexDevice(raw: WebexDevice, siteId: string): Device {
     lastSeenAt: raw.created ?? new Date(0).toISOString(),
     siteId,
     roomId: raw.workspaceId ? `webex:${raw.workspaceId}` : undefined,
-    tags: raw.tags ?? [],
+    tags,
   };
 }
 

@@ -127,6 +127,16 @@ const NUMBERING: readonly CountryNumbering[] = [
   { country: 'CA', prefix: '+1416', carrier: 'Bell Canada', subscriberDigits: 7 },
 ] as const;
 
+/** Microsoft Teams Rooms systems — from Teams-native and Cisco (Webex) hardware. */
+const MTR_PATTERN = /MTR|Teams Rooms|Room Kit|Room Bar/i;
+
+export function deviceTags(model: string): string[] {
+  if (model.includes('Phone')) return ['desk-phone'];
+  const tags = ['room-system'];
+  if (MTR_PATTERN.test(model)) tags.push('mtr');
+  return tags;
+}
+
 function isoDay(anchor: number, dayOffset: number): string {
   return new Date(anchor + dayOffset * DAY_MS).toISOString().slice(0, 10);
 }
@@ -252,7 +262,7 @@ export function generateSeedData(seed = 20260718, anchorMs = Date.now()): SeedDa
       siteId: site.id,
       roomId: room?.id,
       projectId: project?.id,
-      tags: def.model.includes('Phone') ? ['desk-phone'] : ['room-system'],
+      tags: deviceTags(def.model),
     });
     const issues: string[] = [];
     if (status === 'degraded') {

@@ -87,6 +87,20 @@ and `RESEND_API_KEY` / `ALERT_EMAIL_TO` env vars — see
 [backend/.env.example](backend/.env.example). Redirect URIs to register:
 `{APP_BASE_URL}/api/auth/google/callback` and `.../api/auth/microsoft/callback`.
 
+## Editing, imports & MTR
+
+- **Projects** are editable: create, edit and delete from the Projects page, or
+  **Import CSV** (`name,client,owner,status,startDate,targetDate,progress,description`;
+  an `id` column updates in place).
+- **Phone numbers** import from a **Teams Admin Center** number export CSV
+  (Voice → Phone numbers → Export) — matched by E.164 and upserted.
+- **Microsoft Teams Rooms (MTR)** devices are identified across both **Teams
+  Admin Center** (Graph) and **Webex Control Hub** (Cisco room hardware running
+  MTR) and filterable via the Devices → Type filter.
+- Live connectors sync devices and rooms into the store; **Sync all** on the
+  Connectors page refreshes every configured vendor. Edits/imports live for the
+  process lifetime (no database yet — a persistence layer is the next step).
+
 ## Connector architecture
 
 One interface, `UcProvider`

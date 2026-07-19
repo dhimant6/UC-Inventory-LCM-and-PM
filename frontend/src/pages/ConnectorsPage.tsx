@@ -46,6 +46,25 @@ export default function ConnectorsPage() {
             ? `Data source: ${connectors.data.dataSource === 'mock' ? 'mock (seeded data — set DATA_SOURCE=live to use vendor APIs)' : 'live vendor APIs'}`
             : 'Vendor integrations and sync health.'
         }
+        actions={
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={busy !== null}
+            onClick={async () => {
+              setBusy('sync-all');
+              try {
+                await api.syncAll();
+                connectors.reload();
+              } finally {
+                setBusy(null);
+              }
+            }}
+          >
+            <RefreshCw aria-hidden className={`h-3.5 w-3.5 ${busy === 'sync-all' ? 'animate-spin' : ''}`} />
+            {busy === 'sync-all' ? 'Syncing all…' : 'Sync all'}
+          </Button>
+        }
       />
 
       {connectors.loading && (

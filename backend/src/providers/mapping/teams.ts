@@ -57,8 +57,15 @@ export function mapTeamsDeviceStatus(health: GraphTeamworkDevice['healthStatus']
   }
 }
 
+/** Teams device types that represent a Microsoft Teams Room system. */
+const TEAMS_ROOM_TYPES = ['teamsRoom', 'collaborationBar', 'touchConsole', 'surfaceHub'];
+
 export function mapTeamsDevice(raw: GraphTeamworkDevice, siteId: string): Device {
   const hw = raw.hardwareDetail ?? {};
+  const isMtr =
+    TEAMS_ROOM_TYPES.includes(raw.deviceType) || /MTR|Teams Rooms/i.test(hw.model ?? '');
+  const tags = [raw.deviceType];
+  if (isMtr) tags.push('mtr');
   return {
     id: `teams:${raw.id}`,
     vendor: 'teams',
@@ -74,7 +81,7 @@ export function mapTeamsDevice(raw: GraphTeamworkDevice, siteId: string): Device
     status: mapTeamsDeviceStatus(raw.healthStatus),
     lastSeenAt: raw.lastModifiedDateTime ?? new Date(0).toISOString(),
     siteId,
-    tags: [raw.deviceType],
+    tags,
   };
 }
 

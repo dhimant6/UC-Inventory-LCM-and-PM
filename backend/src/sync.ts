@@ -30,8 +30,15 @@ export async function syncVendor(vendor: Vendor): Promise<SyncResult> {
   }
   try {
     const devices = await provider.listDevices();
-    const others = store.devices.filter((d) => d.vendor !== vendor);
-    store.devices = [...others, ...devices];
+    store.devices = [...store.devices.filter((d) => d.vendor !== vendor), ...devices];
+    // Rooms carry a vendor tag, so seed rooms (untagged) survive while this
+    // vendor's slice is refreshed. Best-effort: a rooms failure won't fail sync.
+    try {
+      const rooms = await provider.listRooms();
+      store.rooms = [...store.rooms.filter((r) => r.vendor !== vendor), ...rooms];
+    } catch {
+      // keep last-known rooms
+    }
     if (connector) {
       connector.status = 'connected';
       connector.lastSyncAt = new Date().toISOString();

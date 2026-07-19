@@ -7,6 +7,7 @@ import path from 'path';
 import { env } from './env';
 import { authRouter } from './routes/auth';
 import { connectorsRouter } from './routes/connectors';
+import { editsRouter } from './routes/edits';
 import { insightsRouter } from './routes/insights';
 import { inventoryRouter } from './routes/inventory';
 
@@ -29,6 +30,7 @@ export function createApp(): express.Express {
   });
 
   app.use('/api/auth', authRouter);
+  app.use('/api', editsRouter);
   app.use('/api', inventoryRouter);
   app.use('/api', insightsRouter);
   app.use('/api/connectors', connectorsRouter);

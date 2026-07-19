@@ -1,6 +1,9 @@
+import { Pencil, Plus, Trash2, Upload } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Drawer, DrawerField } from '../components/drawer';
+import { ImportModal } from '../components/importModal';
+import { ProjectFormModal } from '../components/projectForm';
 import { PageHeader } from '../components/shell';
 import { Column, DataTable } from '../components/table';
 import { ActiveFilterChips, FilterSelect, SearchInput } from '../components/toolbar';
@@ -8,16 +11,27 @@ import {
   Button,
   EmptyState,
   ErrorState,
+  Modal,
   ProgressBar,
   StatusBadge,
   TableSkeleton,
 } from '../components/ui';
-import { api } from '../lib/api';
+import { api, ProjectInput } from '../lib/api';
 import { daysUntil, formatDate, formatE164 } from '../lib/format';
 import type { Project, ProjectDetail } from '../lib/types';
 import { useFetch } from '../lib/useFetch';
 
-function ProjectDrawer({ projectId, onClose }: { projectId: string | null; onClose: () => void }) {
+function ProjectDrawer({
+  projectId,
+  onClose,
+  onEdit,
+  onDelete,
+}: {
+  projectId: string | null;
+  onClose: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   const { data, loading, error, reload } = useFetch<ProjectDetail | null>(
     () => (projectId ? api.project(projectId) : Promise.resolve(null)),
     [projectId],
@@ -28,6 +42,15 @@ function ProjectDrawer({ projectId, onClose }: { projectId: string | null; onClo
       {loading && <TableSkeleton rows={6} />}
       {error && <ErrorState message={error} onRetry={reload} />}
       {data && !loading && !error && (
+        <>
+        <div className="mb-3 flex gap-2">
+          <Button size="sm" variant="secondary" onClick={onEdit}>
+            <Pencil aria-hidden className="h-3.5 w-3.5" /> Edit
+          </Button>
+          <Button size="sm" variant="danger" onClick={onDelete}>
+            <Trash2 aria-hidden className="h-3.5 w-3.5" /> Delete
+          </Button>
+        </div>
         <dl className="divide-y divide-line">
           <DrawerField label="Status">
             <StatusBadge status={data.status} />
@@ -78,6 +101,7 @@ function ProjectDrawer({ projectId, onClose }: { projectId: string | null; onClo
             </ul>
           </DrawerField>
         </dl>
+        </>
       )}
     </Drawer>
   );
@@ -87,6 +111,32 @@ export default function ProjectsPage() {
   const projects = useFetch(() => api.projects(), []);
   const [params, setParams] = useSearchParams();
   const [selected, setSelected] = useState<string | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<Project | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const selectedProject = projects.data?.find((p) => p.id === selected) ?? null;
+
+  const saveProject = async (input: ProjectInput) => {
+    if (editing) await api.updateProject(editing.id, input);
+    else await api.createProject(input);
+    projects.reload();
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedProject) return;
+    setBusy(true);
+    try {
+      await api.deleteProject(selectedProject.id);
+      setDeleteOpen(false);
+      setSelected(null);
+      projects.reload();
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const q = params.get('q') ?? '';
   const status = params.get('status') ?? '';
@@ -180,6 +230,23 @@ export default function ProjectsPage() {
       <PageHeader
         title="Projects"
         description="Deployment programmes and their rollout state across clients and sites."
+        actions={
+          <>
+            <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}>
+              <Upload aria-hidden className="h-3.5 w-3.5" /> Import CSV
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                setEditing(null);
+                setFormOpen(true);
+              }}
+            >
+              <Plus aria-hidden className="h-3.5 w-3.5" /> New project
+            </Button>
+          </>
+        }
       />
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -230,7 +297,58 @@ export default function ProjectsPage() {
         />
       )}
 
-      <ProjectDrawer projectId={selected} onClose={() => setSelected(null)} />
+      <ProjectDrawer
+        projectId={selected}
+        onClose={() => setSelected(null)}
+        onEdit={() => {
+          setEditing(selectedProject);
+          setFormOpen(true);
+        }}
+        onDelete={() => setDeleteOpen(true)}
+      />
+
+      <ProjectFormModal
+        open={formOpen}
+        project={editing}
+        onClose={() => setFormOpen(false)}
+        onSubmit={saveProject}
+      />
+
+      <ImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Import projects"
+        description="Upload a CSV to create or update projects. An id column updates an existing project; leave it blank to create."
+        sampleHeader="name,client,owner,status,startDate,targetDate,progress,description"
+        mapRow={(r) => ({
+          id: r.id || undefined,
+          name: r.name,
+          client: r.client,
+          owner: r.owner,
+          status: r.status,
+          startDate: r.startDate,
+          targetDate: r.targetDate,
+          progress: r.progress,
+          description: r.description,
+        })}
+        onImport={(rows) => api.importProjects(rows)}
+        onDone={() => projects.reload()}
+      />
+
+      <Modal open={deleteOpen} onClose={() => setDeleteOpen(false)} title="Delete project" width="max-w-sm">
+        <p className="text-sm text-ink-2">
+          Delete <b className="text-ink-1">{selectedProject?.name}</b>? Devices and numbers stay, but
+          are detached from this project. This can't be undone.
+        </p>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setDeleteOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" size="sm" disabled={busy} onClick={confirmDelete}>
+            {busy ? 'Deleting…' : 'Delete'}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -236,6 +236,16 @@ export default function DevicesPage() {
           ]}
         />
         <FilterSelect
+          label="Type"
+          value={tag}
+          onChange={(v) => setParam('tag', v)}
+          options={[
+            { value: 'mtr', label: 'Teams Rooms (MTR)' },
+            { value: 'room-system', label: 'Room systems' },
+            { value: 'desk-phone', label: 'Desk phones' },
+          ]}
+        />
+        <FilterSelect
           label="Site"
           value={site}
           onChange={(v) => setParam('site', v)}

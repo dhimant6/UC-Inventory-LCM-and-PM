@@ -1,7 +1,8 @@
-import { Download } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Drawer, DrawerField } from '../components/drawer';
+import { ImportModal } from '../components/importModal';
 import { PageHeader } from '../components/shell';
 import { Column, DataTable } from '../components/table';
 import { ActiveFilterChips, FilterSelect, SearchInput } from '../components/toolbar';
@@ -34,6 +35,7 @@ export default function NumbersPage() {
   const devices = useFetch(() => api.devices(), []);
   const [params, setParams] = useSearchParams();
   const [selected, setSelected] = useState<PhoneNumber | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   const q = params.get('q') ?? '';
   const status = params.get('status') ?? '';
@@ -118,6 +120,11 @@ export default function NumbersPage() {
       <PageHeader
         title="Phone numbers"
         description="DID inventory across carriers and countries, with assignment and porting state."
+        actions={
+          <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}>
+            <Upload aria-hidden className="h-3.5 w-3.5" /> Import from Teams
+          </Button>
+        }
       />
 
       {/* DID ranges strip */}
@@ -245,6 +252,26 @@ export default function NumbersPage() {
           </dl>
         )}
       </Drawer>
+
+      <ImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Import numbers from Teams Admin Center"
+        description="Export your numbers from Teams Admin Center (Voice → Phone numbers → Export) and upload the CSV. Numbers are matched by E.164 and upserted."
+        sampleHeader="Telephone Number,Number Type,Assigned To,Location,Status"
+        mapRow={(r) => ({
+          // Teams Admin Center export columns → internal number shape.
+          e164: r['Telephone Number'] ?? r['Phone Number'] ?? r.e164 ?? '',
+          carrier: r['Number Type'] ?? r.carrier ?? 'Microsoft Teams',
+          country: r['ISO Country Code'] ?? r.country ?? '',
+          status: (r['Assigned To'] || r.assignedTo ? 'assigned' : 'unassigned'),
+        })}
+        onImport={(rows) => api.importNumbers(rows)}
+        onDone={() => {
+          numbers.reload();
+          ranges.reload();
+        }}
+      />
     </div>
   );
 }

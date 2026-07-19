@@ -44,6 +44,7 @@ describe('Teams mapping', () => {
     expect(device.macAddress).toBe('AA:BB:CC:DD:EE:FF');
     expect(device.status).toBe('online');
     expect(device.siteId).toBe('teams:tenant');
+    expect(device.tags).toContain('mtr');
   });
 
   it('extracts only E.164-looking business phones', () => {
@@ -95,6 +96,7 @@ describe('Webex mapping', () => {
     expect(device.roomId).toBe('webex:ws9');
     expect(device.status).toBe('degraded');
     expect(device.firmwareVersion).toBe('RoomOS 11.14.1.5');
+    expect(device.tags).toContain('mtr');
   });
 
   it('maps numbers with owner/state to normalized status', () => {
