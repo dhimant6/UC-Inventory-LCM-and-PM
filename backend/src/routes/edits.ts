@@ -1,4 +1,5 @@
 import { Request, Router } from 'express';
+import { deletePersistedProject, persistNumbers, persistProject } from '../db';
 import type { PhoneNumber, Project, ProjectStatus } from '../domain/types';
 import { getStore } from '../store';
 
@@ -64,7 +65,7 @@ function normalizeProject(input: Record<string, unknown>, id: string): Project |
 
 /* ---------------- Projects ---------------- */
 
-editsRouter.post('/projects', (req, res) => {
+editsRouter.post('/projects', async (req, res) => {
   const store = getStore();
   const project = normalizeProject(req.body ?? {}, nextId('proj', store.projects));
   if (!project) {
@@ -72,11 +73,12 @@ editsRouter.post('/projects', (req, res) => {
     return;
   }
   store.projects.push(project);
+  await persistProject(project);
   logActivity(`Project "${project.name}" created`, 'project', project.id);
   res.status(201).json(project);
 });
 
-editsRouter.put('/projects/:id', (req, res) => {
+editsRouter.put('/projects/:id', async (req, res) => {
   const store = getStore();
   const index = store.projects.findIndex((p) => p.id === req.params.id);
   if (index === -1) {
@@ -92,11 +94,12 @@ editsRouter.put('/projects/:id', (req, res) => {
     return;
   }
   store.projects[index] = merged;
+  await persistProject(merged);
   logActivity(`Project "${merged.name}" updated`, 'project', merged.id);
   res.json(merged);
 });
 
-editsRouter.delete('/projects/:id', (req, res) => {
+editsRouter.delete('/projects/:id', async (req, res) => {
   const store = getStore();
   const project = store.projects.find((p) => p.id === req.params.id);
   if (!project) {
@@ -104,21 +107,25 @@ editsRouter.delete('/projects/:id', (req, res) => {
     return;
   }
   store.projects = store.projects.filter((p) => p.id !== req.params.id);
-  // Detach devices/numbers from the removed project.
+  // Detach devices/numbers from the removed project (persist the numbers).
   for (const d of store.devices) if (d.projectId === req.params.id) d.projectId = undefined;
-  for (const n of store.numbers) if (n.projectId === req.params.id) n.projectId = undefined;
+  const detached = store.numbers.filter((n) => n.projectId === req.params.id);
+  for (const n of detached) n.projectId = undefined;
+  await deletePersistedProject(req.params.id);
+  await persistNumbers(detached);
   logActivity(`Project "${project.name}" deleted`, 'project', project.id);
   res.json({ ok: true });
 });
 
 // Bulk import: accepts an array of project rows; upserts by id when present.
-editsRouter.post('/projects/import', (req, res) => {
+editsRouter.post('/projects/import', async (req, res) => {
   const rows = Array.isArray(req.body) ? req.body : req.body?.rows;
   if (!Array.isArray(rows)) {
     res.status(400).json({ error: 'Expected an array of project rows' });
     return;
   }
   const store = getStore();
+  const touched: Project[] = [];
   let created = 0;
   let updated = 0;
   const errors: string[] = [];
@@ -138,7 +145,9 @@ editsRouter.post('/projects/import', (req, res) => {
       store.projects.push(project);
       created += 1;
     }
+    touched.push(project);
   }
+  for (const p of touched) await persistProject(p);
   logActivity(`Imported projects (${created} new, ${updated} updated)`, 'project', 'import');
   res.json({ created, updated, errors });
 });
@@ -181,7 +190,7 @@ function guessCountry(e164: string): string {
 }
 
 // Import numbers (e.g. a Teams Admin Center number export mapped client-side).
-editsRouter.post('/numbers/import', (req: Request, res) => {
+editsRouter.post('/numbers/import', async (req: Request, res) => {
   const rows = Array.isArray(req.body) ? req.body : req.body?.rows;
   if (!Array.isArray(rows)) {
     res.status(400).json({ error: 'Expected an array of number rows' });
@@ -189,6 +198,7 @@ editsRouter.post('/numbers/import', (req: Request, res) => {
   }
   const store = getStore();
   const bySig = new Map(store.numbers.map((n) => [n.e164, n]));
+  const touched: PhoneNumber[] = [];
   let created = 0;
   let updated = 0;
   const errors: string[] = [];
@@ -214,14 +224,17 @@ editsRouter.post('/numbers/import', (req: Request, res) => {
     const existing = bySig.get(number.e164);
     if (existing) {
       Object.assign(existing, number, { id: existing.id, rangeId: existing.rangeId });
+      touched.push(existing);
       updated += 1;
     } else {
       if (number.rangeId === 'range-imported') ensureRange();
       store.numbers.push(number);
       bySig.set(number.e164, number);
+      touched.push(number);
       created += 1;
     }
   }
+  await persistNumbers(touched);
   logActivity(`Imported phone numbers (${created} new, ${updated} updated)`, 'number', 'import');
   res.json({ created, updated, errors });
 });

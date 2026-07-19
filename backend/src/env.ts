@@ -15,6 +15,10 @@ export const env = {
   port: Number(optional('PORT') ?? 4000),
   dataSource,
 
+  // Postgres connection string. When set, projects & phone numbers are
+  // persisted here; when unset, the app runs fully in-memory.
+  databaseUrl: optional('DATABASE_URL'),
+
   // Live connector credentials (Teams/Webex/Poly device sync).
   msTenantId: optional('MS_TENANT_ID'),
   msClientId: optional('MS_CLIENT_ID'),

@@ -98,8 +98,25 @@ and `RESEND_API_KEY` / `ALERT_EMAIL_TO` env vars — see
   Admin Center** (Graph) and **Webex Control Hub** (Cisco room hardware running
   MTR) and filterable via the Devices → Type filter.
 - Live connectors sync devices and rooms into the store; **Sync all** on the
-  Connectors page refreshes every configured vendor. Edits/imports live for the
-  process lifetime (no database yet — a persistence layer is the next step).
+  Connectors page refreshes every configured vendor.
+
+## Persistence
+
+Project and phone-number edits/imports persist to **Postgres** when
+`DATABASE_URL` is set; without it the app runs fully in-memory (the default —
+great for the demo, local dev and tests). On boot an empty database is seeded
+from the generator, then becomes the source of truth; every edit is written
+through. Devices, rooms, users and analytics stay generated/synced (a connector
+view, not a system of record), so they need no database.
+
+**Add a database on Render:**
+1. Dashboard → **New → Postgres** → pick the free plan → **Create Database**.
+2. Open the database → copy its **Internal Connection String**.
+3. Go to the web service → **Environment** → add `DATABASE_URL` = that string → **Save**.
+4. Render redeploys; the log prints `[db] empty database — seeding …` on first boot.
+
+Keep the service and database in the **same region** so the internal connection
+works. (Render's free Postgres expires after 90 days — fine for a portfolio.)
 
 ## Connector architecture
 
