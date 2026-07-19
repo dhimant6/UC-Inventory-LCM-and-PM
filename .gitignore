@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+*.log
+build_errors.txt
+backend/src/db/data.json
+backend/src/db/*.backup
